@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Profile Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        /* Same CSS styles as before */
+    </style>
+</head>
+
+<body>
+    <div id="profile-show">
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+            <a class="navbar-brand" href="#">Profile Dashboard</a>
+        </nav>
+        <div class="container-fluid">
+            <div class="jumbotron text-center">
+                <img id="profile-pic" width="250px" src="{{ url_for('static', filename='default-profile-pic.jpg') }}"
+                    alt="Profile Picture">
+                <h1 id="name"></h1>
+                <p id="balance"></p>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">Recent Activity</div>
+                        <div class="card-body">
+                            <p>No recent activity.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">Payment Method</div>
+                        <div class="card-body">
+                            <p>No payment method added.</p>
+                            <a href="#">Add Payment Method</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">Profile Settings</div>
+                        <div class="card-body">
+                            <p><a href="#">Edit Profile</a></p>
+                            <p><a href="#">Change Password</a></p>
+                            <p><a href="#">Logout</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="welcome">
+        <h2 class="text-center">Welcome to MedVisionAI</h2>
+    </div>
+    <script>
+        firstTime=true;
+        function fetchData() {
+            fetch('/syncfrontend')
+                .then(response => response.json())
+                .then(data => {
+                    const profilePic = document.getElementById('profile-pic');
+                    const name = document.getElementById('name');
+                    const balance = document.getElementById('balance');
+                    if (data.changed) {
+                        profilePic.src = data.avatar;
+                        name.textContent = data.username;
+                        balance.textContent = 'Balance: ' + data.balance;
+                        document.getElementById("profile-show").hidden=false;
+                        document.getElementById("welcome").hidden=true;
+                        firstTime=false;
+                    }else if(firstTime){
+                        document.getElementById("profile-show").hidden=true;
+                        document.getElementById("welcome").hidden=false;
+                    }
+                })
+                .catch(error => console.error(error));
+        }
+        setInterval(fetchData, 300);
+    </script>
+</body>
+
+</html>

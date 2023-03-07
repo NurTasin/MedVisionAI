@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Data</title>
+</head>
+<body>
+    <p>Name: {{ usr["name"] }}</p>
+    <br>
+    <p>Balance: {{ usr["token"]}}</p>
+    <br>
+    {% if usr["order_history"]|length >0 %}
+    Order History:
+    <ul>
+        {% for order in usr["order_history"] %}
+        <li>{{ order }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</body>
+</html>

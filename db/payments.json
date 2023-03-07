@@ -1,0 +1,12 @@
+{
+    "TRX_XXXXXXXX":{
+        "id":"TRX_XXXXXXXX",
+        "ammount": 10.69,
+        "sender":"USR_XXXXXXX1",
+        "order":{
+            "linked":true,
+            "orderID":"ORD_XXXXXXXX"
+        },
+        "_time":"01-01-2023 12:00:00Z"
+    }
+}

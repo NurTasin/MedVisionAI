@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOGIN</title>
+    <style>
+        *,
+        *:before,
+        *:after {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: url("{{url_for('static',filename='bg.jpg')}}");
+            background-position: center;
+            background-size: fill;
+            background-repeat: no-repeat;
+
+        }
+
+        form {
+            height: 520px;
+            width: 400px;
+            background-color: rgba(255, 255, 255, 0.03);
+            position: absolute;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+            border-radius: 10px;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 40px rgba(8, 7, 16, 0.6);
+            padding: 50px 35px;
+        }
+
+        form * {
+            font-family: "Poppins", sans-serif;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            outline: none;
+            border: none;
+        }
+
+        form h5 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.5rem;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 30px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        input {
+            display: block;
+            height: 50px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            padding: 0 10px;
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: 300;
+        }
+
+        ::placeholder {
+            color: #e1e1e1;
+        }
+
+        input:hover {
+            outline: 2px solid #0001;
+        }
+
+        button {
+            margin-top: 50px;
+            width: 100%;
+            background-color: #c7391c;
+            color: #ddd;
+            padding: 15px 0;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+
+        .social {
+            margin-top: 30px;
+            display: flex;
+        }
+
+        .social div {
+            background: red;
+            width: 150px;
+            border-radius: 3px;
+            padding: 5px 10px 10px 5px;
+            background-color: rgba(255, 255, 255, 0.27);
+            color: #eaf0fb;
+            text-align: center;
+        }
+
+        .social div:hover {
+            background-color: rgba(255, 255, 255, 0.47);
+
+        }
+
+        .social .fb {
+            margin-left: 25px;
+        }
+
+        .social i {
+            margin: 10px 0 4px;
+        }
+
+        @media only screen and (max-width: 600px) {
+            body {
+                background: url("{{url_for('static',filename='bg.jpg')}}") center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <form action="/login" method="POST" id="loginform">
+        <img src="{{url_for('static',filename='logo.png')}}" class="img-fluid rounded-top mx-auto" alt="AI MVM" style="width: 80%;position: relative;left: 50%;transform: translateX(-50%);">
+        <br>
+        <h5>{{msg}}</h5>
+
+        <label for="username">Username</label>
+        <input type="text" placeholder="Email or Phone" id="username" name="username">
+
+        <label for="password">Password</label>
+        <input type="password" placeholder="Password" id="password" name="passw">
+        <br>
+        <p>Or <a href="/sign_up">Sign Up</a></p>
+        <button onclick="document.getElementById('loginform').submit()">Log In</button>
+        <p style="text-align: center;color: #ddd; font-size: 0.6rem;margin-top: 2rem;">&copy; 2023 AI MVM Developers. All rights reserved.</p>
+    </form>
+</body>
+
+</html>

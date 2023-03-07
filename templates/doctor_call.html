@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Call!!</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+</head>
+<body style="height: 100vh;">
+    <img src="{{url_for('static',filename='logo.png')}}" alt="AI MVM" style="position: relative;left: 50%;transform: translateX(-50%);width:30%"><br>
+    <img id="stream" src="http://192.168.174.4:81/stream" crossorigin="" style="position: relative;top:50%;left: 50%;transform: translate(-50%,-50%);width: 80%;">
+    <br>
+    <a href="/" class="btn btn-lg btn-danger" style="position: relative;left: 50%;transform: translateX(-50%);">Hang Up</a>
+    <script>
+        const request = new XMLHttpRequest();
+        request.open("GET","http://192.168.174.4/control?var=framesize&val=11")
+        request.send()
+    </script>
+</body>
+</html>

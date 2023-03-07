@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <style>
+        .glyphicon {
+            margin-right: 5px;
+        }
+
+        .thumbnail {
+            margin-bottom: 20px;
+            padding: 0px;
+            -webkit-border-radius: 0px;
+            -moz-border-radius: 0px;
+            border-radius: 0px;
+        }
+
+        .item.list-group-item {
+            float: none;
+            width: 100%;
+            background-color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .item.list-group-item:nth-of-type(odd):hover,
+        .item.list-group-item:hover {
+            background: #428bca;
+        }
+
+        .item.list-group-item .list-group-image {
+            margin-right: 10px;
+        }
+
+        .item.list-group-item .thumbnail {
+            margin-bottom: 0px;
+        }
+
+        .item.list-group-item .caption {
+            padding: 9px 9px 0px 9px;
+        }
+
+        .item.list-group-item:nth-of-type(odd) {
+            background: #eeeeee;
+        }
+
+        .item.list-group-item:before,
+        .item.list-group-item:after {
+            display: table;
+            content: " ";
+        }
+
+        .item.list-group-item img {
+            float: left;
+        }
+
+        .item.list-group-item:after {
+            clear: both;
+        }
+
+        .list-group-item-text {
+            margin: 0 0 11px;
+        }
+    </style>
+    <title>Buy Medicines</title>
+</head>
+
+<body>
+    <div id="products" class="row list-group">
+        {% if details_group|length > 0 %}
+            {% for details in details_group %}
+            <div class="item  col-xs-4 col-lg-4 list-group-item">
+                <div class="thumbnail">
+                    <img class="group list-group-image" src="{{details['pic_url']}}" alt="{{details['name']}}" width="100px">
+                    <div class="caption">
+                        <h4 class="group inner list-group-item-heading">
+                            {{details["name"]}}</h4>
+                        <p class="group inner list-group-item-text">{{details["generic"]}} {{details['strength']}}
+                            {{details['form']}} by {{ details["company"] }}.</p>
+                        <div class="row">
+                            <div class="col-xs-12 col-md-6">
+                                <p class="lead">
+                                    &#2547; {{details['d_price']}} / {{details['unit']}}</p>
+                            </div>
+                            <div class="col-xs-12 col-md-6">
+                                <a id="btn-{{details['id']}}" class="btn btn-success"
+                                    onclick="toggle(`{{details['id']}}`,`{{details['name']}}`,{{details['d_price']}})">Select</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            <button class="btn btn-primary" onclick="confirmOrder()" style="font-size: 1.7rem;height: 3rem;">Confirm</button>
+        {% else %}
+            <h4 class="text-center"> No medicine found. Sorry for the inconvenience. </h4>
+            <a href="/" class="btn btn-lg btn-primary"> Go Home</a>
+        {% endif %}
+        <form method="post" id="theForm" action="/confirm_order">
+            <input type="hidden" id="form-cart" name="names" value="[]">
+            <input type="hidden" id="form-cost" name="cost" value="0">
+            <input type="hidden" id="form-usrid" name="usrid" value="USR_91b9c87e">
+        </form>
+    </div>
+    <script>
+        function arrayRemove(arr, value) {
+
+            return arr.filter(function (ele) {
+                return ele != value;
+            });
+        }
+        let cart = []
+        let cost = 0
+        function toggle(id, name, price) {
+            if (cart.includes(name)) {
+                cart=arrayRemove(cart, String(name))
+                cost -= price
+                document.getElementById(`btn-${id}`).innerText = "Select"
+            } else {
+                cart.push(String(name))
+                cost += price
+                document.getElementById(`btn-${id}`).innerText = "Deselect"
+            }
+        }
+        function confirmOrder() {
+            if (cart.length > 0) {
+                document.getElementById("form-cart").value=JSON.stringify(cart)
+                document.getElementById("form-cost").value=cost
+                document.getElementById("theForm").submit()
+            }else{
+                alert("Please Select Some Items First.")
+            }
+        }
+    </script>
+</body>
+
+</html>
