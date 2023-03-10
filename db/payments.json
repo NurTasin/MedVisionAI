@@ -1,12 +1,13 @@
 {
-    "TRX_XXXXXXXX":{
-        "id":"TRX_XXXXXXXX",
-        "ammount": 10.69,
-        "sender":"USR_XXXXXXX1",
-        "order":{
-            "linked":true,
-            "orderID":"ORD_XXXXXXXX"
-        },
-        "_time":"01-01-2023 12:00:00Z"
-    }
+  "TRXd5a2196ec4a240b88130e6fbf350fb77": {
+    "ammount": 284.0,
+    "items": [
+      "Ace XR",
+      "Maxpro 20",
+      "Amodis 400",
+      "Ciprocin 500",
+      "Alatrol 10"
+    ],
+    "time": "10/03/2023 15:12:34"
+  }
 }

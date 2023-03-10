@@ -1,38 +1,34 @@
 {
   "USR_deadface": {
     "id": "USR_deadface",
-    "card_uid":"41633126",
+    "card_uid": "41633126",
     "name": "Nur Tasin",
     "pw": "ngdcrocks",
-    "token": 53324.37,
+    "token": 52952.17,
     "avatar": "/propics/rhnguihnrlignr.jpg",
     "order_history": [
-      "ORD_123235"
+      "TRXd5a2196ec4a240b88130e6fbf350fb77"
     ],
     "prescriptions": []
   },
   "USR_d00dc0ffee": {
     "id": "USR_d00dc0ffee",
-    "card_uid":"3d9c29d3",
+    "card_uid": "3d9c29d3",
     "name": "Faysal Ahamed",
     "pw": "morphinislit",
     "token": 53324.37,
     "avatar": "/propics/0x00afuirbgurgb.jpg",
-    "order_history": [
-
-    ],
+    "order_history": [],
     "prescriptions": []
   },
   "USR_f00dbabe": {
     "id": "USR_f00dbabe",
-    "card_uid":"2d751ed3",
+    "card_uid": "2d751ed3",
     "name": "Neamul Morshed",
     "pw": "messesomossa",
     "token": 53324.37,
     "avatar": "/propics/auirgfurhgurgh.jpg",
-    "order_history": [
-
-    ],
+    "order_history": [],
     "prescriptions": []
   }
 }

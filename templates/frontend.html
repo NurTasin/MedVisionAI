@@ -6,15 +6,129 @@
     <title>Profile Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <style>
-        /* Same CSS styles as before */
+        *,
+        *:before,
+        *:after {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: url("{{url_for('static',filename='bg.jpg')}}");
+            background-position: center;
+            background-size: fill;
+            background-repeat: no-repeat;
+
+        }
+
+        form {
+            height: 520px;
+            width: 400px;
+            background-color: rgba(255, 255, 255, 0.03);
+            position: absolute;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+            border-radius: 10px;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 40px rgba(8, 7, 16, 0.6);
+            padding: 50px 35px;
+        }
+
+        form * {
+            font-family: "Poppins", sans-serif;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            outline: none;
+            border: none;
+        }
+
+        form h5 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.5rem;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 30px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        input {
+            display: block;
+            height: 50px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            padding: 0 10px;
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: 300;
+        }
+
+        ::placeholder {
+            color: #e1e1e1;
+        }
+
+        input:hover {
+            outline: 2px solid #0001;
+        }
+
+        button {
+            margin-top: 50px;
+            width: 100%;
+            background-color: #c7391c;
+            color: #ddd;
+            padding: 15px 0;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+
+        .social {
+            margin-top: 30px;
+            display: flex;
+        }
+
+        .social div {
+            background: red;
+            width: 150px;
+            border-radius: 3px;
+            padding: 5px 10px 10px 5px;
+            background-color: rgba(255, 255, 255, 0.27);
+            color: #eaf0fb;
+            text-align: center;
+        }
+
+        .social div:hover {
+            background-color: rgba(255, 255, 255, 0.47);
+
+        }
+
+        .social .fb {
+            margin-left: 25px;
+        }
+
+        .social i {
+            margin: 10px 0 4px;
+        }
+
+        @media only screen and (max-width: 600px) {
+            body {
+                background: url("{{url_for('static',filename='bg.jpg')}}") center;
+            }
+        }
     </style>
 </head>
 
 <body>
     <div id="profile-show">
-        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-            <a class="navbar-brand" href="#">Profile Dashboard</a>
-        </nav>
         <div class="container-fluid">
             <div class="jumbotron text-center">
                 <img id="profile-pic" width="250px" src="{{ url_for('static', filename='default-profile-pic.jpg') }}"
@@ -25,9 +139,9 @@
             <div class="row">
                 <div class="col-md-4">
                     <div class="card">
-                        <div class="card-header">Recent Activity</div>
-                        <div class="card-body">
-                            <p>No recent activity.</p>
+                        <div class="card-header">Order History</div>
+                        <div class="card-body" id="ohistory">
+                        
                         </div>
                     </div>
                 </div>
@@ -54,27 +168,61 @@
         </div>
     </div>
     <div id="welcome">
-        <h2 class="text-center">Welcome to MedVisionAI</h2>
+        <h2 class="text-center" color="white">Welcome to MedVisionAI</h2>
+    </div>
+    <div id="password">
+        <h1 color="white" class="text-center">Welcome <span id="username">USER</span>.</h1>
+        <h3 color="white">Please enter your password</h3>
+        <input type="password" name="userpass" id="userpass">
+        <button onclick="confimPass();">Submit</button>
     </div>
     <script>
+        const profilePic = document.getElementById('profile-pic');
+        const name = document.getElementById('name');
+        const balance = document.getElementById('balance');
+        document.getElementById("profile-show").hidden=true;
+        document.getElementById("welcome").hidden=false;
+        document.getElementById("password").hidden=true;
         firstTime=true;
+        GlobalData={}
+        function confimPass(){
+            if(document.getElementById("userpass").value === GlobalData.pw){
+                profilePic.src = GlobalData.avatar;
+                name.textContent = GlobalData.username;
+                balance.textContent = 'Balance: ' + GlobalData.balance;
+                document.getElementById("profile-show").hidden=false;
+                document.getElementById("welcome").hidden=true;
+                document.getElementById("password").hidden=true;
+                firstTime=false;
+                if(GlobalData.order_history.length===0){
+                    document.getElementById("ohistory").innerHTML=`
+                    <p> No Purchase Recorded </p>
+                    `
+                }else{
+                    document.getElementById("ohistory").innerHTML=""
+                    for(ijkl=0;ijkl<GlobalData.order_history.length;ijkl++){
+                        document.getElementById("ohistory").innerHTML+=`
+                        <a href="/trx/${GlobalData.order_history[ijkl]}">${GlobalData.order_history[ijkl]}</a>
+                        `
+                    }
+                }
+            }else{
+                alert("Wrong Password Given!!")
+            }
+            document.getElementById("userpass").value=""
+        }
         function fetchData() {
             fetch('/syncfrontend')
                 .then(response => response.json())
                 .then(data => {
-                    const profilePic = document.getElementById('profile-pic');
-                    const name = document.getElementById('name');
-                    const balance = document.getElementById('balance');
                     if (data.changed) {
-                        profilePic.src = data.avatar;
-                        name.textContent = data.username;
-                        balance.textContent = 'Balance: ' + data.balance;
-                        document.getElementById("profile-show").hidden=false;
-                        document.getElementById("welcome").hidden=true;
-                        firstTime=false;
-                    }else if(firstTime){
-                        document.getElementById("profile-show").hidden=true;
-                        document.getElementById("welcome").hidden=false;
+                        if(data.username!==GlobalData.username){
+                            document.getElementById("username").innerText=data.username;
+                            GlobalData=data;
+                            document.getElementById("profile-show").hidden=true;
+                            document.getElementById("welcome").hidden=true;
+                            document.getElementById("password").hidden=false;
+                        }
                     }
                 })
                 .catch(error => console.error(error));

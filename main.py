@@ -8,27 +8,30 @@ from prescriptionHandler import getMedicines,getText,getAllMedicineDetails
 import json
 import time
 import threading
+import datetime
+
 # import serialIO
-from lcdinterface import LCD
+# from lcdinterface import LCD
 
 
 
-LCD_IP="192.168.24.96"
-Display=LCD(LCD_IP)
+# LCD_IP="192.168.24.96"
+# Display=LCD(LCD_IP)
 UPLOAD_FOLDER = path.abspath('./uploads')
 
 app=Flask(__name__)
 app_cors=CORS(app)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-user_db=DBMS("./db/users.json")
+user_db = DBMS("./db/users.json")
+payment_db = DBMS("./db/payments.json")
 
 
-def DisplayToLCD(string1,string2):
-    delay=(len(string2)+32)*0.55
-    Display.scrollFormatted(string1,False,string2,True)
-    time.sleep(delay)
-    Display.scrollFormatted("   MedVisionAI  ",False,"Artificial Intelligence Based Medicine Vending Machine With OCR",True)
+# def DisplayToLCD(string1,string2):
+#     delay=(len(string2)+32)*0.55
+#     Display.scrollFormatted(string1,False,string2,True)
+#     time.sleep(delay)
+#     Display.scrollFormatted("   MedVisionAI  ",False,"Artificial Intelligence Based Medicine Vending Machine With OCR",True)
 
 
 
@@ -78,6 +81,8 @@ def logoutPageHandler():
 def upload_file():
     if request.method == 'POST':
       f = request.files['prescription']
+      if f.content_length==0:
+          return "<h1>Please Select A File Or Scan The Prescription</h1>"
       file_path=path.join(app.config["UPLOAD_FOLDER"],str(uuid.uuid4())[0::8]+"."+f.filename.split(".")[-1])
       f.save(file_path)
       INFO(f"New image uploaded. path: {file_path}")
@@ -98,20 +103,31 @@ def ConfirmOrder():
     if request.method=="POST":
         medicines=json.loads(request.form.get("names"))
         cost=float(request.form.get("cost"))
-        userid=str(request.form.get("usrid"))
+        userid=str(request.cookies.get("usr"))
 
         userdata=user_db.read()
         if userdata[userid]["token"] >= cost:
             userdata[userid]["token"]=float("%.2lf"%(userdata[userid]["token"]-cost))
+            trx_id="TRX"+str(uuid.uuid4()).replace('-','')
+            paymentData=payment_db.read()
+            current_date = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            paymentData[trx_id]={
+                "ammount":cost,
+                "items":medicines,
+                "time":str(current_date)
+            }
+            userdata[userid]["order_history"].append(trx_id)
+            payment_db.write(paymentData)
             user_db.write(userdata)
             #Do the hardwear magic!!
             # serialIO.dropMed(medicines)
-            otherThread=threading.Thread(target=DisplayToLCD,args=("Purchased Items:",", ".join(medicines)))
-            otherThread.start()
+            # otherThread=threading.Thread(target=DisplayToLCD,args=("Purchased Items:",", ".join(medicines)))
+            # otherThread.start()
             LOG(f"User `{userdata[userid]['name']}` bought {medicines} in exchange of {cost}. New Baalance: {userdata[userid]['token']}")
             return render_template("thanks.html",details={
                 "username":userdata[userid]['name'],
                 'new_bal':userdata[userid]['token'],
+                'trx_id':trx_id,
                 "cost":cost
             })
         else:
@@ -140,23 +156,14 @@ def getUserDetails(usrid):
     else:
         return jsonify({"msg":"For Security reasons we don't allow tresspassing"}),403
 
-@app.route("/servon",methods=["GET"])
+@app.route("/trx/<trx_id>")
 @cross_origin()
-def servoOn():
-    print("Servo Open")
-    return "OK",200
-
-@app.route("/servoff",methods=["GET"])
-@cross_origin()
-def servoOff():
-    print("Servo Closed")
-    return "OK",200
-
-@app.route("/mask",methods=["GET"])
-@cross_origin()
-def ServeMaskDetector():
-    return render_template("mask.html")
-
+def getTRX_JSON(trx_id):
+    dbdata=payment_db.read()
+    if trx_id in dbdata:
+        return jsonify(dbdata[trx_id]),200
+    else:
+        return jsonify({"msg":"Invalid TRX ID"}),400
 
 server_frontend_sync_pack={
     "username":"",
@@ -164,6 +171,7 @@ server_frontend_sync_pack={
     "avatar":"",
     "pw":"",
     "code":200,
+    "order_history":[],
     "changed":True
 }
 
@@ -178,6 +186,7 @@ def handleCardScans():
     server_frontend_sync_pack["balance"]=""
     server_frontend_sync_pack["avatar"]=""
     server_frontend_sync_pack["pw"]=""
+    server_frontend_sync_pack["order_history"]=[]
     current_data=user_db.read()
     for id in current_data.keys():
         if current_data[id]["card_uid"]==card_uid:
@@ -186,6 +195,7 @@ def handleCardScans():
             server_frontend_sync_pack["avatar"]=url_for("static",filename=current_data[id]["avatar"])
             server_frontend_sync_pack["pw"]=current_data[id]["pw"]
             server_frontend_sync_pack["code"]=200
+            server_frontend_sync_pack["order_history"]=current_data[id]["order_history"]
             data_changed=True
     
     return "OK"
@@ -203,7 +213,15 @@ def syncFronted():
 @app.route("/frontend")
 @cross_origin()
 def serveFrontend():
+    server_frontend_sync_pack={
+        "username":"",
+        "balance":"",
+        "avatar":"",
+        "pw":"",
+        "code":200,
+        "changed":True
+    }
     return render_template("frontend.html")
 
 if __name__=="__main__":
-    app.run("0.0.0.0",80)
+    app.run("0.0.0.0",80,True)
