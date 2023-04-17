@@ -10,14 +10,41 @@
 </head>
 
 <body>
+    {% if details['cart']|length > 0 %}
     <img src="{{url_for('static',filename='thanku.png')}}" class="img-fluid mx-auto" alt="Take Your Medicines"
         style="position: relative;width: 75%; left: 50%;transform: translateX(-50%);">
+    {%endif%}
         <br><br><br>
-    <div style="position: relative;width: 50%; left: 50%;transform: translateX(-50%);" class="text-center">
-        <h5>Dear {{details['username']}},</h5>
+    <div style="position: relative;width: 90%; left: 50%;transform: translateX(-50%);" class="text-center">
+        <h3>Dear {{details['username']}},</h3>
+        {% if details['online-cart']|length > 0 %}
+        <h4> Online Delivery Details</h4>
+        <h5> Order List</h5>
+        <table class="table table-bordered" style="width: 100%; margin: 1rem auto;">
+            <thead>
+                <tr>
+                    <th scope="col">SL Num.</th>
+                    <th scope="col">Medicine</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for i, cartElement in details['online-cart-enum'] %}
+                <tr>
+                    <th scope="row">{{ i + 1 }}</th>
+                    <td>{{ cartElement }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <h5>Total Price: <code>&#2547; {{details['online-cost']}}</code></h5>
+        <h5>Payment Method: <code> COD </code></h5>
+        <h5>Estimated Delivery Date: <code> {{details['estimated-delivery']}}</code></h5>
+        {% endif %}
+        {% if details['cart']|length > 0 %}
         <p>You have bought some medicines from us. We appreciate that you have used our service.</p>
-        <p>Please collect your medicines from the vending mechine.</p>
+        <p>Please collect your medicines from the vending machine.</p>
         <p>Your new balance is <code>{{details['new_bal']}}</code> BDT after spending <code>{{details['cost']}}</code> BDT</p>
+        {%endif%}
         <a href="/" class="btn btn-lg btn-success">Home</a>
     </div>
 

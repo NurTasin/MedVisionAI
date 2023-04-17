@@ -85,15 +85,16 @@
                                 <p class="lead">
                                     &#2547; {{details['d_price']}} / {{details['unit']}}</p>
                             </div>
+                            
                             <div class="col-xs-12 col-md-6">
-                                {% if not details['rx_req'] %}
+                                {% if details['available_in_machine'] %}
                                 <a id="btn-{{details['id']}}" class="btn btn-success"
-                                    onclick="toggle(`{{details['id']}}`,`{{details['name']}}`,{{details['d_price']}})">Select</a>
+                                    onclick="toggle(`{{details['id']}}`,`{{details['name']}}`,{{details['d_price']}})">Add To Buy From Machine</a>
                                 {% else %}
-                                <a id="btn-{{details['id']}}" class="btn btn-danger"
-                                    onclick="alert('To buy this medicine you will need a prescription.')">Select</a>
+                                <a id="btn-{{details['id']}}" class="btn btn-warning"
+                                    onclick="addCart(`{{details['id']}}`,`{{details['name']}}`,{{details['d_price']}})">Add To Online Cart</a>
                                 {% endif %}
-                            </div>
+                                </div>
                         </div>
                     </div>
                 </div>
@@ -104,10 +105,12 @@
             <h4 class="text-center"> No medicine found. Sorry for the inconvenience. </h4>
             <a href="/" class="btn btn-lg btn-primary"> Go Home</a>
         {% endif %}
-        <form method="post" id="theForm" action="/confirm_order">
+        <form method="post" id="theForm" action="/confirm_order_pres">
             <input type="hidden" id="form-cart" name="names" value="[]">
             <input type="hidden" id="form-cost" name="cost" value="0">
-            <input type="hidden" id="form-usrid" name="usrid" value="USR_91b9c87e">
+            <input type="hidden" id="form-delivery" name="online-cart" value="[]">
+            <input type="hidden" id="form-delivery-cost" name="online-cost" value="0">
+            <!-- <input type="hidden" id="form-usrid" name="usrid" value="USR_91b9c87e"> -->
         </form>
     </div>
     <script>
@@ -118,21 +121,38 @@
             });
         }
         let cart = []
+        let DeliveryCart = []
         let cost = 0
+        let onlineCost = 0;
         function toggle(id, name, price) {
             if (cart.includes(name)) {
                 cart=arrayRemove(cart, String(name))
                 cost -= price
-                document.getElementById(`btn-${id}`).innerText = "Select"
+                document.getElementById(`btn-${id}`).innerText = "Add To Buy From Machine"
             } else {
                 cart.push(String(name))
                 cost += price
-                document.getElementById(`btn-${id}`).innerText = "Deselect"
+                document.getElementById(`btn-${id}`).innerText = "Remove From Buy From Machine"
             }
         }
+
+        function addCart(id, name, price) {
+            if (DeliveryCart.includes(name)) {
+                DeliveryCart=arrayRemove(DeliveryCart, String(name))
+                onlineCost -= price
+                document.getElementById(`btn-${id}`).innerHTML = "Add To Online Cart"
+            } else {
+                DeliveryCart.push(String(name))
+                onlineCost += price
+                document.getElementById(`btn-${id}`).innerHTML = "Remove From Online Cart"
+            }
+        }
+
         function confirmOrder() {
-            if (cart.length > 0) {
+            if (cart.length > 0 | DeliveryCart.length > 0) {
                 document.getElementById("form-cart").value=JSON.stringify(cart)
+                document.getElementById("form-delivery").value=JSON.stringify(DeliveryCart)
+                document.getElementById("form-delivery-cost").value=onlineCost
                 document.getElementById("form-cost").value=cost
                 document.getElementById("theForm").submit()
             }else{

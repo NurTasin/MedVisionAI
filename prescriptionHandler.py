@@ -7,7 +7,7 @@ from logger import LOG
 # pytesseract.pytesseract.tesseract_cmd ="C:\\Program Files\\Tesseract-OCR\\tesseract"
 pytesseract.pytesseract.tesseract_cmd ="/usr/bin/tesseract"
 
-
+STOCK=["ace xr","maxpro 20","amodis 40","ciprocin 500","alatrol 10"]
 
 
 def getText(imagePath:str):
@@ -18,8 +18,8 @@ def getText(imagePath:str):
     # Increase the contrast
     enhancer = ImageEnhance.Contrast(bright_img)
     final_img = enhancer.enhance(1.5) # increase contrast by a factor of 1.5
-    final_img.save("img.jpg")
-    txt=pytesseract.image_to_string(Image.open("img.jpg"),lang="eng+ben")
+    final_img.save("img.png")
+    txt=pytesseract.image_to_string(Image.open("img.png"),lang="eng")
     LOG(txt)
     return txt
 
@@ -35,7 +35,7 @@ def getMedicines(text:str):
     for i in text_arr:
         isMed=in2in(["CAP.","TAB.","SYR."],i)
         if isMed[0]:
-            medicines.append(i[isMed[1]+4::])
+            medicines.append(i[isMed[1]+4::].strip())
     return medicines
 
 def getMedicineDetails(name):
@@ -44,7 +44,9 @@ def getMedicineDetails(name):
     })
     LOG(res.url)
     if res.json()["status"]=="success":
-        return res.json()["data"][0]
+        data=res.json()["data"][0]
+        data["available_in_machine"]=in2in(STOCK,name)[0]
+        return data
     else:
         return {}
 

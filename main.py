@@ -9,6 +9,14 @@ import json
 import time
 import threading
 import datetime
+from jinja2 import Environment
+
+def my_enumerate(iterable):
+    return enumerate(iterable)
+
+env = Environment()
+env.filters['enumerate'] = my_enumerate
+
 
 # import serialIO
 # from lcdinterface import LCD
@@ -33,6 +41,21 @@ payment_db = DBMS("./db/payments.json")
 #     time.sleep(delay)
 #     Display.scrollFormatted("   MedVisionAI  ",False,"Artificial Intelligence Based Medicine Vending Machine With OCR",True)
 
+
+
+def EstimatedDeliveryDate(n1, n2):
+    today = datetime.date.today()
+    date1 = today + datetime.timedelta(days=n1)
+    date2 = today + datetime.timedelta(days=n2)
+
+    # format the output string
+    if date1.month == date2.month:
+        return f"{date1.day}-{date2.day} {date1.strftime('%B %Y')}"
+    else:
+        if date1.year == date2.year:
+            return f"{date1.day} {date1.strftime('%B')} - {date2.day} {date2.strftime('%B %Y')}"
+        else:
+            return f"{date1.day} {date1.strftime('%B %Y')} - {date2.day} {date2.strftime('%B %Y')}"
 
 
 
@@ -81,8 +104,8 @@ def logoutPageHandler():
 def upload_file():
     if request.method == 'POST':
       f = request.files['prescription']
-      if f.content_length==0:
-          return "<h1>Please Select A File Or Scan The Prescription</h1>"
+    #   if f.content_length==0:
+    #       return "<h1>Please Select A File Or Scan The Prescription</h1>"
       file_path=path.join(app.config["UPLOAD_FOLDER"],str(uuid.uuid4())[0::8]+"."+f.filename.split(".")[-1])
       f.save(file_path)
       INFO(f"New image uploaded. path: {file_path}")
@@ -93,16 +116,18 @@ def upload_file():
       INFO(f"Searching for details in Arogga API")
       medDetails=getAllMedicineDetails(medicines)
       INFO("Rendering and serving template")
-      return render_template("medicine_details.html",details_group=medDetails)
+      return render_template("medicine_details_pres.html",details_group=medDetails)
     else:
         return redirect(url_for("landingPage"))
         
-@app.route("/confirm_order",methods=["GET","POST"])
+@app.route("/confirm_order_pres",methods=["GET","POST"])
 @cross_origin()
-def ConfirmOrder():
+def ConfirmOrderPres():
     if request.method=="POST":
         medicines=json.loads(request.form.get("names"))
         cost=float(request.form.get("cost"))
+        onlineCart=json.loads(request.form.get("online-cart"))
+        onlineCost=float(request.form.get("online-cost"))
         userid=str(request.cookies.get("usr"))
 
         userdata=user_db.read()
@@ -128,11 +153,58 @@ def ConfirmOrder():
                 "username":userdata[userid]['name'],
                 'new_bal':userdata[userid]['token'],
                 'trx_id':trx_id,
-                "cost":cost
+                "cart":medicines,
+                "cost":cost,
+                "online-cart": onlineCart,
+                "online-cart-enum": enumerate(onlineCart),
+                "online-cost": onlineCost,
+                "estimated-delivery": EstimatedDeliveryDate(1,5)
             })
         else:
             return "Insufficient Ballance"
 
+@app.route("/confirm_order",methods=["GET","POST"])
+@cross_origin()
+def ConfirmOrder():
+    if request.method=="POST":
+        medicines=json.loads(request.form.get("names"))
+        cost=float(request.form.get("cost"))
+        # onlineCart=json.loads(request.form.get("online-cart"))
+        # onlineCost=float(request.form.get("online-cost"))
+        userid=str(request.cookies.get("usr"))
+
+        userdata=user_db.read()
+        if userdata[userid]["token"] >= cost:
+            userdata[userid]["token"]=float("%.2lf"%(userdata[userid]["token"]-cost))
+            trx_id="TRX"+str(uuid.uuid4()).replace('-','')
+            paymentData=payment_db.read()
+            current_date = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            paymentData[trx_id]={
+                "ammount":cost,
+                "items":medicines,
+                "time":str(current_date)
+            }
+            userdata[userid]["order_history"].append(trx_id)
+            payment_db.write(paymentData)
+            user_db.write(userdata)
+            #Do the hardwear magic!!
+            # serialIO.dropMed(medicines)
+            # otherThread=threading.Thread(target=DisplayToLCD,args=("Purchased Items:",", ".join(medicines)))
+            # otherThread.start()
+            LOG(f"User `{userdata[userid]['name']}` bought {medicines} in exchange of {cost}. New Baalance: {userdata[userid]['token']}")
+            return render_template("thanks.html",details={
+                "username":userdata[userid]['name'],
+                'new_bal':userdata[userid]['token'],
+                'trx_id':trx_id,
+                "cart":medicines,
+                "cost":cost,
+                "online-cart": [],
+                "online-cart-enum": enumerate([]),
+                "online-cost": 0,
+                "estimated-delivery": EstimatedDeliveryDate(1,5)
+            })
+        else:
+            return "Insufficient Ballance"
 
 @app.route("/buy_from_machine",methods=["GET"])
 @cross_origin()
